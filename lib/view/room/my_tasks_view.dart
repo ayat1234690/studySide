@@ -214,6 +214,7 @@ class _MyTasksViewState extends State<MyTasksView>
         id: task.id,
         title: task.title,
         completed: false,
+            deadline: task.deadline,
       ),
     )
         .toList();
@@ -225,6 +226,7 @@ class _MyTasksViewState extends State<MyTasksView>
         id: task.id,
         title: task.title,
         completed: true,
+            deadline: task.deadline,
       ),
     )
         .toList();
@@ -264,6 +266,7 @@ class _MyTasksViewState extends State<MyTasksView>
           id: task.id,
           title: task.title,
           completed: true,
+          deadline: task.deadline,
         ),
       );
     });
@@ -359,16 +362,19 @@ class _MyTasksViewState extends State<MyTasksView>
   // ======================================================
 
   Future<void> _showAddTaskDialog() async {
-    final taskName = await showDialog<String>(
+    final result = await showDialog<_TaskFormData>(
       context: context,
       builder: (_) => const _AddTaskDialog(),
     );
 
-    if (taskName == null || taskName.trim().isEmpty) {
+    if (result == null || result.title.trim().isEmpty) {
       return;
     }
 
-    final newTask = TaskStore.addTask(taskName);
+    final newTask = TaskStore.addTask(
+      result.title,
+      deadline: result.deadline,
+    );
 
     if (newTask == null) {
       return;
@@ -380,6 +386,7 @@ class _MyTasksViewState extends State<MyTasksView>
           id: newTask.id,
           title: newTask.title,
           completed: false,
+          deadline: newTask.deadline,
         ),
       );
     });
@@ -390,20 +397,22 @@ class _MyTasksViewState extends State<MyTasksView>
   // ======================================================
 
   Future<void> _editTask(_Task task) async {
-    final newName = await showDialog<String>(
+    final result = await showDialog<_TaskFormData>(
       context: context,
       builder: (_) => _EditTaskDialog(
         initialName: task.title,
+        initialDeadline: task.deadline,
       ),
     );
 
-    if (newName == null || newName.trim().isEmpty) {
+    if (result == null || result.title.trim().isEmpty) {
       return;
     }
 
     final success = TaskStore.editTask(
       task.id,
-      newName,
+      result.title,
+      deadline: result.deadline,
     );
 
     if (!success) {
@@ -411,7 +420,8 @@ class _MyTasksViewState extends State<MyTasksView>
     }
 
     setState(() {
-      task.title = newName.trim();
+      task.title = result.title.trim();
+      task.deadline = result.deadline;
     });
   }
 
@@ -831,11 +841,13 @@ class _Task {
   final String id;
   String title;
   bool completed;
+  DateTime?deadline;
 
   _Task({
     required this.id,
     required this.title,
     this.completed = false,
+    this.deadline,
   });
 }
 
@@ -1057,14 +1069,52 @@ class _TaskCard extends StatelessWidget {
           const SizedBox(width: 13),
 
           Expanded(
-            child: Text(
-              task.title,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  task.title,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.textDark,
+                  ),
+                ),
 
-              style: const TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                color: AppColors.textDark,
-              ),
+                if (task.deadline != null) ...[
+                  const SizedBox(height: 5),
+
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.schedule_rounded,
+                        size: 14,
+                        color: task.deadline!.isBefore(DateTime.now())
+                            ? AppColors.error
+                            : AppColors.textGrey,
+                      ),
+
+                      const SizedBox(width: 4),
+
+                      Flexible(
+                        child: Text(
+                          _formatDeadline(
+                            context,
+                            task.deadline!,
+                          ),
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                            color: task.deadline!.isBefore(DateTime.now())
+                                ? AppColors.error
+                                : AppColors.textGrey,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ],
             ),
           ),
 
@@ -1718,25 +1768,87 @@ class _CelebrationOverlay
 // ======================================================
 // ADD TASK DIALOG
 // ======================================================
+class _TaskFormData {
+  final String title;
+  final DateTime? deadline;
 
-class _AddTaskDialog
-    extends StatefulWidget {
+  const _TaskFormData({
+    required this.title,
+    this.deadline,
+  });
+}
+String _formatDeadline(
+    BuildContext context,
+    DateTime deadline,
+    ) {
+  final date = MaterialLocalizations.of(context)
+      .formatMediumDate(deadline);
+
+  final time = MaterialLocalizations.of(context)
+      .formatTimeOfDay(
+    TimeOfDay.fromDateTime(deadline),
+  );
+
+  return '$date • $time';
+}
+
+class _AddTaskDialog extends StatefulWidget {
   const _AddTaskDialog();
 
   @override
-  State<_AddTaskDialog> createState() =>
-      _AddTaskDialogState();
+  State<_AddTaskDialog> createState() => _AddTaskDialogState();
 }
 
-class _AddTaskDialogState
-    extends State<_AddTaskDialog> {
+class _AddTaskDialogState extends State<_AddTaskDialog> {
   final TextEditingController controller =
   TextEditingController();
+
+  DateTime? selectedDeadline;
 
   @override
   void dispose() {
     controller.dispose();
     super.dispose();
+  }
+
+  Future<void> _selectDeadline() async {
+    final date = await showDatePicker(
+      context: context,
+      firstDate: DateTime.now(),
+      lastDate: DateTime(2100),
+      initialDate: selectedDeadline ?? DateTime.now(),
+    );
+
+    if (date == null || !mounted) {
+      return;
+    }
+
+    final time = await showTimePicker(
+      context: context,
+      initialTime: selectedDeadline != null
+          ? TimeOfDay.fromDateTime(selectedDeadline!)
+          : TimeOfDay.now(),
+    );
+
+    if (time == null) {
+      return;
+    }
+
+    setState(() {
+      selectedDeadline = DateTime(
+        date.year,
+        date.month,
+        date.day,
+        time.hour,
+        time.minute,
+      );
+    });
+  }
+
+  void _removeDeadline() {
+    setState(() {
+      selectedDeadline = null;
+    });
   }
 
   @override
@@ -1744,32 +1856,67 @@ class _AddTaskDialogState
     return AlertDialog(
       title: const Text(
         'Add Task',
-
         style: TextStyle(
           fontWeight: FontWeight.w800,
         ),
       ),
 
-      content: TextField(
-        controller: controller,
-        autofocus: true,
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: controller,
+              autofocus: true,
+              textInputAction: TextInputAction.done,
+              decoration: const InputDecoration(
+                hintText: 'Enter your task',
+              ),
+            ),
 
-        textInputAction:
-        TextInputAction.done,
+            const SizedBox(height: 20),
 
-        decoration:
-        const InputDecoration(
-          hintText: 'Enter your task',
+            // Deadline
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                onPressed: _selectDeadline,
+                style: OutlinedButton.styleFrom(
+                  side: const BorderSide(
+                    color: Colors.indigo ,
+                    width: 1.5,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(25),
+                  ),
+                ),
+                icon: const Icon(
+                  Icons.calendar_month_rounded,
+                ),
+                label: Text(
+                  selectedDeadline == null
+                      ? 'Set Deadline'
+                      : _formatDeadline(
+                    context,
+                    selectedDeadline!,
+                  ),
+                ),
+              ),
+            ),
+
+            if (selectedDeadline != null)
+              TextButton.icon(
+                onPressed: _removeDeadline,
+                icon: const Icon(
+                  Icons.close,
+                  size: 18,
+                ),
+                label: const Text(
+                  'Remove Deadline',
+                ),
+              ),
+          ],
         ),
-
-        onSubmitted: (value) {
-          if (value.trim().isNotEmpty) {
-            Navigator.pop(
-              context,
-              value.trim(),
-            );
-          }
-        },
       ),
 
       actions: [
@@ -1777,24 +1924,24 @@ class _AddTaskDialogState
           onPressed: () {
             Navigator.pop(context);
           },
-
           child: const Text('Cancel'),
         ),
 
         ElevatedButton(
           onPressed: () {
-            if (controller.text
-                .trim()
-                .isEmpty) {
+            if (controller.text.trim().isEmpty) {
               return;
             }
 
             Navigator.pop(
               context,
-              controller.text.trim(),
+              _TaskFormData(
+                title: controller.text.trim(),
+                deadline: selectedDeadline,
+              ),
+
             );
           },
-
           child: const Text('Add'),
         ),
       ],
@@ -1802,16 +1949,19 @@ class _AddTaskDialogState
   }
 }
 
+
+
 // ======================================================
 // EDIT TASK DIALOG
 // ======================================================
 
-class _EditTaskDialog
-    extends StatefulWidget {
+class _EditTaskDialog extends StatefulWidget {
   final String initialName;
+  final DateTime? initialDeadline;
 
   const _EditTaskDialog({
     required this.initialName,
+    this.initialDeadline,
   });
 
   @override
@@ -1819,18 +1969,20 @@ class _EditTaskDialog
       _EditTaskDialogState();
 }
 
-class _EditTaskDialogState
-    extends State<_EditTaskDialog> {
+class _EditTaskDialogState extends State<_EditTaskDialog> {
   late TextEditingController controller;
+
+  DateTime? selectedDeadline;
 
   @override
   void initState() {
     super.initState();
 
-    controller =
-        TextEditingController(
-          text: widget.initialName,
-        );
+    controller = TextEditingController(
+      text: widget.initialName,
+    );
+
+    selectedDeadline = widget.initialDeadline;
   }
 
   @override
@@ -1839,24 +1991,98 @@ class _EditTaskDialogState
     super.dispose();
   }
 
+  Future<void> _selectDeadline() async {
+    final date = await showDatePicker(
+      context: context,
+      firstDate: DateTime.now(),
+      lastDate: DateTime(2100),
+      initialDate: selectedDeadline ?? DateTime.now(),
+    );
+
+    if (date == null || !mounted) {
+      return;
+    }
+
+    final time = await showTimePicker(
+      context: context,
+      initialTime: selectedDeadline != null
+          ? TimeOfDay.fromDateTime(selectedDeadline!)
+          : TimeOfDay.now(),
+    );
+
+    if (time == null) {
+      return;
+    }
+
+    setState(() {
+      selectedDeadline = DateTime(
+        date.year,
+        date.month,
+        date.day,
+        time.hour,
+        time.minute,
+      );
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
       title: const Text(
         'Edit Task',
-
         style: TextStyle(
           fontWeight: FontWeight.w800,
         ),
       ),
 
-      content: TextField(
-        controller: controller,
-        autofocus: true,
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: controller,
+              autofocus: true,
+              decoration: const InputDecoration(
+                hintText: 'Task name',
+              ),
+            ),
 
-        decoration:
-        const InputDecoration(
-          hintText: 'Task name',
+            const SizedBox(height: 20),
+
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                onPressed: _selectDeadline,
+                icon: const Icon(
+                  Icons.calendar_month_rounded,
+                ),
+                label: Text(
+                  selectedDeadline == null
+                      ? 'Set Deadline'
+                      : _formatDeadline(
+                    context,
+                    selectedDeadline!,
+                  ),
+                ),
+              ),
+            ),
+
+            if (selectedDeadline != null)
+              TextButton.icon(
+                onPressed: () {
+                  setState(() {
+                    selectedDeadline = null;
+                  });
+                },
+                icon: const Icon(
+                  Icons.close,
+                  size: 18,
+                ),
+                label: const Text(
+                  'Remove Deadline',
+                ),
+              ),
+          ],
         ),
       ),
 
@@ -1865,14 +2091,12 @@ class _EditTaskDialogState
           onPressed: () {
             Navigator.pop(context);
           },
-
           child: const Text('Cancel'),
         ),
 
         ElevatedButton(
           onPressed: () {
-            final value =
-            controller.text.trim();
+            final value = controller.text.trim();
 
             if (value.isEmpty) {
               return;
@@ -1880,10 +2104,12 @@ class _EditTaskDialogState
 
             Navigator.pop(
               context,
-              value,
+              _TaskFormData(
+                title: value,
+                deadline: selectedDeadline,
+              ),
             );
           },
-
           child: const Text('Save'),
         ),
       ],

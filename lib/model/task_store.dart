@@ -9,11 +9,14 @@ class TaskItem {
   String title;
 
   bool completed;
+  DateTime? deadline;
+
 
   TaskItem({
     required this.id,
     required this.title,
     this.completed = false,
+    this.deadline,
   });
 }
 
@@ -109,7 +112,7 @@ class TaskStore  {
   // ADD TASK
   // ==========================================================
 
-  static TaskItem? addTask(String task) {
+  static TaskItem? addTask(String task,{DateTime?deadline}) {
     final cleanTask = task.trim();
 
     if (cleanTask.isEmpty || currentRoom == null) {
@@ -122,6 +125,7 @@ class TaskStore  {
           .toString(),
       title: cleanTask,
       completed: false,
+      deadline: deadline,
     );
 
     currentRoomTasks.add(newTask);
@@ -136,8 +140,9 @@ class TaskStore  {
 
   static bool editTask(
       String id,
-      String newTitle,
-      ) {
+      String newTitle,{
+        DateTime?deadline,
+  }) {
     if (currentRoom == null) {
       return false;
     }
@@ -184,6 +189,7 @@ class TaskStore  {
     // --------------------------------------------------------
 
     roomTasks[index].title = cleanTitle;
+    roomTasks[index].deadline = deadline;
 
     // --------------------------------------------------------
     // If this was the current task,
