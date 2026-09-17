@@ -76,17 +76,17 @@ flutter run
 ## 📱 Screenshots
 
 ### 🔐 Login
-![Login](screenshots/screenshots/login.jpeg)
+![Login](screenshots/screenshots/%20login.jpeg)
 
 ### 🏠 Home
 ![Home](screenshots/screenshots/%20home.jpeg)
 
  
 ### 📊 Progress
-![Progress](screenshots/screenshots/progress.jpeg)
+![Progress](screenshots/screenshots/%20progress.jpeg)
 
 ### 👤 Profile
-![Profile](screenshots/screenshots/profile.jpeg)
+![Profile](screenshots/screenshots/%20profile.jpeg)
 
 ## 🎯 Project Goal
 
