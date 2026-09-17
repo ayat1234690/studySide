@@ -73,14 +73,22 @@ flutter run
 
 ## 📱 Main Screens
 
-The application includes several screens designed to support students in managing their study activities, including:
+## 📱 Screenshots
 
-* Login & Registration
-* Home
-* Tasks
-* Progress
-* Profile
-* Study Sessions
+### 🔐 Login
+![Login](screenshots/login.png)
+
+### 🏠 Home
+![Home](screenshots/home.png)
+
+### ✅ Tasks
+![Tasks](screenshots/tasks.png)
+
+### 📊 Progress
+![Progress](screenshots/progress.png)
+
+### 👤 Profile
+![Profile](screenshots/profile.png)
 
 ## 🎯 Project Goal
 
