@@ -1,17 +1,96 @@
-# study_side
+# StudySide 📚
 
-A new Flutter project.
+StudySide is a Flutter-based study management application designed to help students organize their study activities, manage tasks, and track their study progress in one place.
 
-## Getting Started
+## ✨ Features
 
-This project is a starting point for a Flutter application.
+* 🔐 User Authentication
+* 👤 Profile Management
+* 📊 Study Progress Tracking
+* ✅ Task Management
+* 📅 Task Deadlines
+* ⏱️ Study Sessions Tracking
+* 📈 Study Statistics
+* 🔥 Study Streak Tracking
+* 📱 User-friendly and organized interface
+* ☁️ Cloud data storage using Firebase
 
-A few resources to get you started if this is your first Flutter project:
+## 🛠️ Technologies Used
 
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
+* **Flutter**
+* **Dart**
+* **Firebase Authentication**
+* **Cloud Firestore**
+* **Provider**
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## 🏗️ Project Structure
+
+The project follows a structured Flutter architecture with separate layers for:
+
+* **Models** – Data models used throughout the application
+* **Views** – Application screens and UI
+* **View Models** – Application logic and state management
+* **Services** – Firebase and database operations
+
+## 🚀 Getting Started
+
+### Prerequisites
+
+Make sure you have the following installed:
+
+* Flutter SDK
+* Dart SDK
+* Android Studio or Visual Studio Code
+* A configured Firebase project
+
+### 📥 Installation
+
+1. Clone the repository:
+
+```bash
+git clone https://github.com/ayat1234690/studySide.git
+```
+
+2. Navigate to the project directory:
+
+```bash
+cd studySide
+```
+
+3. Install the required dependencies:
+
+```bash
+flutter pub get
+```
+
+4. Configure Firebase for the project.
+
+5. Run the application:
+
+```bash
+flutter run
+```
+
+## 📱 Main Screens
+
+The application includes several screens designed to support students in managing their study activities, including:
+
+* Login & Registration
+* Home
+* Tasks
+* Progress
+* Profile
+* Study Sessions
+
+## 🎯 Project Goal
+
+The main goal of StudySide is to provide students with a simple and organized platform for managing their study tasks, monitoring their progress, and maintaining consistent study habits.
+
+## 👩‍💻 Project
+
+**StudySide**
+Built with Flutter as part of the NTI Flutter Track Graduation Project.
+
+## 📄 License
+
+This project was created for educational and graduation project purposes.
