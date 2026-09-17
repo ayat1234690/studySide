@@ -79,7 +79,7 @@ flutter run
 ![Login](screenshots/screenshots/login.jpeg)
 
 ### 🏠 Home
-![Home](screenshots/screenshots/home.jpeg)
+![Home](screenshots/screenshots/%20home.jpeg)
 
  
 ### 📊 Progress
